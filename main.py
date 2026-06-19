@@ -4,32 +4,32 @@ import numpy as np
 import plotly.graph_objects as go
 from datetime import datetime
 import time
+import random
 
 # 페이지 설정
 st.set_page_config(page_title="고급 계산기 & 그래프", page_icon="🧮", layout="wide")
 
-# 무지개색 배경 - 시간에 따라 변하는 색상
-def get_rainbow_colors():
-    """시간에 따라 무지개 색상 2개를 반환"""
+# 무지개색 배경 - 랜덤 색상
+def get_random_rainbow_colors():
+    """랜덤 무지개 색상 2개를 반환"""
     colors = [
-        ("#FF0000", "#FF7F00"),  # 빨강-주황
-        ("#FF7F00", "#FFFF00"),  # 주황-노랑
-        ("#FFFF00", "#00FF00"),  # 노랑-초록
-        ("#00FF00", "#0000FF"),  # 초록-파랑
-        ("#0000FF", "#4B0082"),  # 파랑-남색
-        ("#4B0082", "#9400D3"),  # 남색-보라
-        ("#9400D3", "#FF0000"),  # 보라-빨강
+        "#FF0000",  # 빨강
+        "#FF7F00",  # 주황
+        "#FFFF00",  # 노랑
+        "#00FF00",  # 초록
+        "#0000FF",  # 파랑
+        "#4B0082",  # 남색
+        "#9400D3",  # 보라
+        "#FF1493",  # 진핑크
+        "#00FFFF",  # 시안
+        "#FF00FF",  # 마젠타
     ]
-    current_millisecond = (datetime.now().second * 1000 + datetime.now().microsecond // 1000)
-    color_index = (current_millisecond // 500) % len(colors)
-    return colors[color_index]
-
-# 세션 상태 초기화
-if 'last_update' not in st.session_state:
-    st.session_state.last_update = datetime.now()
+    color1 = random.choice(colors)
+    color2 = random.choice(colors)
+    return color1, color2
 
 # 무지개색 배경을 위한 CSS 스타일
-col1, col2 = get_rainbow_colors()
+col1, col2 = get_random_rainbow_colors()
 
 st.markdown(f"""
     <style>
