@@ -24,7 +24,11 @@ def get_rainbow_colors():
     color_index = (current_millisecond // 500) % len(colors)
     return colors[color_index]
 
-# 무지개색 배경을 위한 CSS 스타일 (매 0.5초마다 색상 변경)
+# 세션 상태 초기화
+if 'last_update' not in st.session_state:
+    st.session_state.last_update = datetime.now()
+
+# 무지개색 배경을 위한 CSS 스타일
 col1, col2 = get_rainbow_colors()
 
 st.markdown(f"""
@@ -60,9 +64,6 @@ st.markdown(f"""
         }}
     </style>
     """, unsafe_allow_html=True)
-
-# 자동 새로고침을 위한 placeholder
-placeholder = st.empty()
 
 st.title("🧮 고급 계산기 & Plotly 그래프 웹앱")
 st.write("사칙연산, 모듈러, 지수, 로그 연산 및 반응형 함수 그래프 그리기를 지원합니다.")
@@ -204,12 +205,6 @@ elif mode == "함수 그래프 그리기":
     # Streamlit에 Plotly 차트 띄우기
     st.plotly_chart(fig, use_container_width=True)
 
-# 배경색 자동 업데이트를 위한 JavaScript
-st.markdown("""
-    <script>
-        // 0.5초마다 페이지 새로고침
-        setInterval(function() {
-            location.reload();
-        }, 500);
-    </script>
-    """, unsafe_allow_html=True)
+# 0.5초마다 자동 리렌더링
+time.sleep(0.5)
+st.rerun()
