@@ -3,48 +3,74 @@ import math
 import numpy as np
 import plotly.graph_objects as go
 from datetime import datetime
+import time
 
 # 페이지 설정
-st.set_page_config(page_title="고급 계산기 & 그래프", page_icon="🧮")
+st.set_page_config(page_title="고급 계산기 & 그래프", page_icon="🧮", layout="wide")
 
 # 무지개색 배경 - 시간에 따라 변하는 색상
-def get_rainbow_color():
-    """시간에 따라 무지개 색상을 반환"""
+def get_rainbow_colors():
+    """시간에 따라 무지개 색상 2개를 반환"""
     colors = [
-        "#FF0000",  # 빨강
-        "#FF7F00",  # 주황
-        "#FFFF00",  # 노랑
-        "#00FF00",  # 초록
-        "#0000FF",  # 파랑
-        "#4B0082",  # 남색
-        "#9400D3",  # 보라
+        ("#FF0000", "#FF7F00"),  # 빨강-주황
+        ("#FF7F00", "#FFFF00"),  # 주황-노랑
+        ("#FFFF00", "#00FF00"),  # 노랑-초록
+        ("#00FF00", "#0000FF"),  # 초록-파랑
+        ("#0000FF", "#4B0082"),  # 파랑-남색
+        ("#4B0082", "#9400D3"),  # 남색-보라
+        ("#9400D3", "#FF0000"),  # 보라-빨강
     ]
     current_second = datetime.now().second
     color_index = (current_second // 1) % len(colors)
     return colors[color_index]
 
-# 무지개색 배경을 위한 CSS 스타일
-rainbow_color = get_rainbow_color()
+# 무지개색 배경을 위한 CSS 스타일 (매 초마다 새로고침)
+col1, col2 = get_rainbow_colors()
+
 st.markdown(f"""
     <style>
-        .main {{
-            background: linear-gradient(135deg, {rainbow_color} 0%, #FF1493 50%, {rainbow_color} 100%);
-            background-size: 400% 400%;
-            animation: gradient 3s ease infinite;
+        * {{
+            margin: 0;
+            padding: 0;
         }}
-        @keyframes gradient {{
+        
+        html, body {{
+            width: 100%;
+            height: 100%;
+        }}
+        
+        [data-testid="stAppViewContainer"] {{
+            background: linear-gradient(135deg, {col1} 0%, {col2} 100%) !important;
+            background-size: 400% 400% !important;
+            animation: rainbow_gradient 3s ease infinite;
+        }}
+        
+        @keyframes rainbow_gradient {{
             0% {{ background-position: 0% 50%; }}
             50% {{ background-position: 100% 50%; }}
             100% {{ background-position: 0% 50%; }}
         }}
+        
+        [data-testid="stSidebar"] {{
+            background: linear-gradient(135deg, {col1} 0%, {col2} 100%) !important;
+        }}
+        
         [data-testid="stMainBlockContainer"] {{
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 10px;
-            margin: 10px;
-            padding: 20px;
+            background: rgba(255, 255, 255, 0.93) !important;
+            border-radius: 15px;
+            margin: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }}
+        
+        .stSelectbox, .stNumberInput, .stSlider, .stButton {{
+            background: rgba(255, 255, 255, 0.98) !important;
         }}
     </style>
     """, unsafe_allow_html=True)
+
+# 페이지 새로고침을 위한 컴포넌트 (시간 기반)
+st.session_state.current_time = datetime.now()
 
 st.title("🧮 고급 계산기 & Plotly 그래프 웹앱")
 st.write("사칙연산, 모듈러, 지수, 로그 연산 및 반응형 함수 그래프 그리기를 지원합니다.")
@@ -185,3 +211,12 @@ elif mode == "함수 그래프 그리기":
 
     # Streamlit에 Plotly 차트 띄우기
     st.plotly_chart(fig, use_container_width=True)
+
+# 배경색 자동 새로고침
+st.markdown("""
+    <script>
+        setTimeout(function() {
+            window.location.reload();
+        }, 1000);
+    </script>
+    """, unsafe_allow_html=True)
