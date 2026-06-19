@@ -1,5 +1,4 @@
 import streamlit as st
-import math
 import numpy as np
 import plotly.graph_objects as go
 
@@ -7,7 +6,7 @@ import plotly.graph_objects as go
 st.set_page_config(page_title="고급 계산기 & 그래프", page_icon="🧮")
 
 st.title("🧮 고급 계산기 & Plotly 그래프 웹앱")
-st.write("사칙연산, 모듈러, 지수, 로그 연산 및 반응형 함수 그래프 그리기를 지원합니다.")
+st.write("사칙연산, 모듈러, 지수, 로그 연산 및 원하는 밑을 가진 로그함수 그래프 그리기를 지원합니다.")
 
 # 대메뉴 선택 (일반 계산기 vs 그래프 모드)
 mode = st.sidebar.selectbox("모드를 선택하세요", ("기본 계산기", "함수 그래프 그리기"))
@@ -57,20 +56,21 @@ if mode == "기본 계산기":
                 if base <= 0 or base == 1:
                     st.error("로그 밑은 0보다 크고 1이 아니어야 합니다.")
                     st.stop()
-                result = math.log(num1, base)
+                # 밑 변환 공식 사용: log_base(num1) = ln(num1) / ln(base)
+                result = np.log(num1) / np.log(base)
 
             st.success(f"결과: {result}")
         except Exception as e:
             st.error(f"오류 발생: {e}")
 
-# --- 2. 함수 그래프 그리기 모드 (Plotly 버전) ---
+# --- 2. 함수 그래프 그리기 모드 ---
 elif mode == "함수 그래프 그리기":
     st.header("📈 Plotly 반응형 그래프")
     st.write("마우스를 올리면 좌표가 보이고, 드래그로 확대가 가능합니다.")
 
     func_type = st.selectbox(
         "함수 종류 선택",
-        ("일차함수 (y = ax + b)", "이차함수 (y = ax² + bx + c)", "사인함수 (y = sin(x))", "코사인함수 (y = cos(x))", "로그함수 (y = log(x))")
+        ("일차함수 (y = ax + b)", "이차함수 (y = ax² + bx + c)", "사인함수 (y = sin(x))", "코사인함수 (y = cos(x))", "로그함수 (y = log_b(x))")
     )
 
     x_min, x_max = st.slider("x축 범위 설정", -50.0, 50.0, (-10.0, 10.0))
@@ -106,29 +106,36 @@ elif mode == "함수 그래프 그리기":
         y = np.cos(x)
         title_label = "y = cos(x)"
 
-    elif func_type == "로그함수 (y = log(x))":
+    elif func_type == "로그함수 (y = log_b(x))":
+        # 유저에게 로그의 밑(b)을 직접 입력받음
+        graph_base = st.number_input("로그의 밑(b)을 입력하세요", value=2.0, min_value=0.1)
+        
+        if graph_base == 1.0:
+            st.error("로그의 밑은 1이 될 수 없습니다.")
+            st.stop()
+
+        # 로그함수는 x가 무조건 0보다 커야 하므로 범위 제어
         if x_min <= 0:
             x = np.linspace(0.1, max(x_max, 1.0), 400)
             st.warning("로그함수 특성상 x축 범위가 0.1부터 시작하도록 자동 조정되었습니다.")
-        y = np.log(x)
-        title_label = "y = ln(x)"
+        
+        # 밑 변환 공식 적용: log_b(x) = ln(x) / ln(b)
+        y = np.log(x) / np.log(graph_base)
+        title_label = f"y = log_{graph_base}(x)"
 
     # Plotly로 그래프 그리기
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=x, y=y, mode='lines', name=title_label, line=dict(color='#1f77b4', width=3)))
     
-    # 레이아웃 스타일 설정 (축 레이블, 그리드 등)
     fig.update_layout(
         title=title_label,
         xaxis_title="x",
         yaxis_title="y",
         template="plotly_white",
-        hovermode="x unified" # 마우스를 대면 x축 기준 값이 한눈에 보임
+        hovermode="x unified"
     )
     
-    # x=0, y=0 기준선 추가구현
     fig.add_hline(y=0, line_dash="dash", line_color="gray", line_width=1)
     fig.add_vline(x=0, line_dash="dash", line_color="gray", line_width=1)
 
-    # Streamlit에 Plotly 차트 띄우기
     st.plotly_chart(fig, use_container_width=True)
