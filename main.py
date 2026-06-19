@@ -20,11 +20,11 @@ def get_rainbow_colors():
         ("#4B0082", "#9400D3"),  # 남색-보라
         ("#9400D3", "#FF0000"),  # 보라-빨강
     ]
-    current_second = datetime.now().second
-    color_index = (current_second // 1) % len(colors)
+    current_millisecond = (datetime.now().second * 1000 + datetime.now().microsecond // 1000)
+    color_index = (current_millisecond // 500) % len(colors)
     return colors[color_index]
 
-# 무지개색 배경을 위한 CSS 스타일 (매 초마다 새로고침)
+# 무지개색 배경을 위한 CSS 스타일 (매 0.5초마다 색상 변경)
 col1, col2 = get_rainbow_colors()
 
 st.markdown(f"""
@@ -41,14 +41,6 @@ st.markdown(f"""
         
         [data-testid="stAppViewContainer"] {{
             background: linear-gradient(135deg, {col1} 0%, {col2} 100%) !important;
-            background-size: 400% 400% !important;
-            animation: rainbow_gradient 3s ease infinite;
-        }}
-        
-        @keyframes rainbow_gradient {{
-            0% {{ background-position: 0% 50%; }}
-            50% {{ background-position: 100% 50%; }}
-            100% {{ background-position: 0% 50%; }}
         }}
         
         [data-testid="stSidebar"] {{
@@ -69,8 +61,8 @@ st.markdown(f"""
     </style>
     """, unsafe_allow_html=True)
 
-# 페이지 새로고침을 위한 컴포넌트 (시간 기반)
-st.session_state.current_time = datetime.now()
+# 자동 새로고침을 위한 placeholder
+placeholder = st.empty()
 
 st.title("🧮 고급 계산기 & Plotly 그래프 웹앱")
 st.write("사칙연산, 모듈러, 지수, 로그 연산 및 반응형 함수 그래프 그리기를 지원합니다.")
@@ -150,17 +142,17 @@ elif mode == "함수 그래프 그리기":
     title_label = ""
 
     if func_type == "일차함수 (y = ax + b)":
-        col1, col2 = st.columns(2)
-        a = col1.number_input("기울기 (a)", value=1.0)
-        b = col2.number_input("y절편 (b)", value=0.0)
+        col1_input, col2_input = st.columns(2)
+        a = col1_input.number_input("기울기 (a)", value=1.0)
+        b = col2_input.number_input("y절편 (b)", value=0.0)
         y = a * x + b
         title_label = f"y = {a}x + {b}"
 
     elif func_type == "이차함수 (y = ax² + bx + c)":
-        col1, col2, col3 = st.columns(3)
-        a = col1.number_input("a (이차항)", value=1.0)
-        b = col2.number_input("b (일차항)", value=0.0)
-        c = col3.number_input("c (상수항)", value=0.0)
+        col1_input, col2_input, col3_input = st.columns(3)
+        a = col1_input.number_input("a (이차항)", value=1.0)
+        b = col2_input.number_input("b (일차항)", value=0.0)
+        c = col3_input.number_input("c (상수항)", value=0.0)
         y = a * (x**2) + b * x + c
         title_label = f"y = {a}x² + {b}x + {c}"
 
@@ -212,11 +204,12 @@ elif mode == "함수 그래프 그리기":
     # Streamlit에 Plotly 차트 띄우기
     st.plotly_chart(fig, use_container_width=True)
 
-# 배경색 자동 새로고침
+# 배경색 자동 업데이트를 위한 JavaScript
 st.markdown("""
     <script>
-        setTimeout(function() {
-            window.location.reload();
-        }, 1000);
+        // 0.5초마다 페이지 새로고침
+        setInterval(function() {
+            location.reload();
+        }, 500);
     </script>
     """, unsafe_allow_html=True)
